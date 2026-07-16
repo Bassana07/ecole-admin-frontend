@@ -1,18 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { EnTete, Puces, Stat } from "@/components/ui";
+import { EnTete, Onglets, Puces, Stat } from "@/components/ui";
 import {
   ANNEE,
   ECOLE,
-  RESULTATS_BEPC,
-  SESSION_BEPC,
+  SESSION_EXAMEN,
   nomCompletBepc,
+  resultatsExamen,
 } from "@/lib/data";
 import { note20, pluriel } from "@/lib/format";
-import type { DecisionBepc } from "@/lib/types";
+import type { DecisionBepc, TypeExamen } from "@/lib/types";
 
+const EXAMENS = ["CEP", "BEPC"] as const;
 const FILTRES = ["Tous", "Admis", "Ajourné", "Absent"] as const;
+
+const LIBELLE_EXAMEN: Record<TypeExamen, string> = {
+  CEP: "Certificat d'Études Primaires",
+  BEPC: "Brevet d'Études du Premier Cycle",
+};
 
 function badgeDecision(d: DecisionBepc) {
   if (d === "Admis") return "b-ok";
@@ -20,20 +26,23 @@ function badgeDecision(d: DecisionBepc) {
   return "b-neutre";
 }
 
-export default function PageBepc() {
+export default function PageExamen() {
+  const [examen, setExamen] = useState<TypeExamen>("BEPC");
   const [filtre, setFiltre] = useState<(typeof FILTRES)[number]>("Tous");
-  const [candidatId, setCandidatId] = useState(RESULTATS_BEPC[0]?.id ?? 1);
   const [recherche, setRecherche] = useState("");
+  const [candidatId, setCandidatId] = useState<number | null>(null);
 
-  const admis = RESULTATS_BEPC.filter((r) => r.decision === "Admis").length;
-  const ajournes = RESULTATS_BEPC.filter((r) => r.decision === "Ajourné").length;
-  const absents = RESULTATS_BEPC.filter((r) => r.decision === "Absent").length;
-  const presents = RESULTATS_BEPC.length - absents;
+  const resultats = useMemo(() => resultatsExamen(examen), [examen]);
+
+  const admis = resultats.filter((r) => r.decision === "Admis").length;
+  const ajournes = resultats.filter((r) => r.decision === "Ajourné").length;
+  const absents = resultats.filter((r) => r.decision === "Absent").length;
+  const presents = resultats.length - absents;
   const taux = presents ? Math.round((admis / presents) * 100) : 0;
 
   const liste = useMemo(() => {
     const q = recherche.trim().toLowerCase();
-    return RESULTATS_BEPC.filter((r) => {
+    return resultats.filter((r) => {
       if (filtre !== "Tous" && r.decision !== filtre) return false;
       if (!q) return true;
       return (
@@ -41,15 +50,24 @@ export default function PageBepc() {
         r.numeroTable.toLowerCase().includes(q)
       );
     });
-  }, [filtre, recherche]);
+  }, [resultats, filtre, recherche]);
 
-  const candidat = RESULTATS_BEPC.find((r) => r.id === candidatId) ?? RESULTATS_BEPC[0];
+  const candidat =
+    resultats.find((r) => r.id === candidatId) ?? liste[0] ?? resultats[0];
+
+  const changerExamen = (e: TypeExamen) => {
+    setExamen(e);
+    setCandidatId(null);
+    setFiltre("Tous");
+  };
+
+  const classeCandidat = examen === "CEP" ? "CM2" : "3e";
 
   return (
     <>
       <EnTete
-        titre="Résultats BEPC"
-        sous={`${ECOLE} · ${SESSION_BEPC} · année ${ANNEE}`}
+        titre="Examen national"
+        sous={`${ECOLE} · CEP et BEPC · ${SESSION_EXAMEN} · année ${ANNEE}`}
         actions={
           <button className="btn sec" onClick={() => window.print()}>
             Imprimer
@@ -57,8 +75,13 @@ export default function PageBepc() {
         }
       />
 
+      <div className="sans-impression" style={{ marginBottom: 16 }}>
+        <Onglets onglets={EXAMENS} actif={examen} onChange={changerExamen} />
+        <p className="sous" style={{ marginTop: 6 }}>{LIBELLE_EXAMEN[examen]}</p>
+      </div>
+
       <div className="grille g4 mb">
-        <Stat libelle="Candidats" valeur={RESULTATS_BEPC.length} />
+        <Stat libelle="Candidats" valeur={resultats.length} />
         <Stat libelle="Admis" valeur={admis} delta={`${pluriel(admis, "candidat")}`} sens="up" />
         <Stat libelle="Ajournés" valeur={ajournes} sens="down" />
         <Stat libelle="Taux de réussite" valeur={`${taux} %`} delta={`${absents} ${pluriel(absents, "absent")}`} />
@@ -79,7 +102,7 @@ export default function PageBepc() {
         <div className="carte nue">
           <div className="carte-tete">
             <h3>{liste.length} {pluriel(liste.length, "résultat")}</h3>
-            <span className="mat">{SESSION_BEPC}</span>
+            <span className="mat">{examen} · {SESSION_EXAMEN}</span>
           </div>
           <table>
             <thead>
@@ -105,7 +128,7 @@ export default function PageBepc() {
                     {r.eleveId != null && (
                       <>
                         <br />
-                        <span className="mat">Élève inscrit · 3e</span>
+                        <span className="mat">Élève inscrit · {classeCandidat}</span>
                       </>
                     )}
                   </td>
@@ -135,8 +158,8 @@ export default function PageBepc() {
                 <img src="/logo.jpeg" alt="" width={48} height={48} style={{ borderRadius: "50%", objectFit: "cover" }} />
                 <div>
                   <p className="oeil">{ECOLE}</p>
-                  <h2>Relevé BEPC</h2>
-                  <p className="sous">{SESSION_BEPC}</p>
+                  <h2>Relevé {examen}</h2>
+                  <p className="sous">{SESSION_EXAMEN}</p>
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>

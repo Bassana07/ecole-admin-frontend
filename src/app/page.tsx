@@ -51,7 +51,7 @@ function VueDirection() {
         {[
           { href: "/presences", icone: "✓", titre: "Faire l'appel", detail: "4 classes à pointer" },
           { href: "/notes", icone: "✎", titre: "Saisir des notes", detail: "Composition en cours" },
-          { href: "/bepc", icone: "★", titre: "Résultats BEPC", detail: "Session juin 2026" },
+          { href: "/bepc", icone: "★", titre: "Examen national", detail: "CEP et BEPC · Session juin 2026" },
           { href: "/paiements", icone: "₣", titre: "Encaisser", detail: `${impayes.length} ${pluriel(impayes.length, "famille")} à relancer` },
         ].map((g) => (
           <Link key={g.href} href={g.href} className="geste">

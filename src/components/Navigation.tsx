@@ -24,7 +24,7 @@ const LIENS: Lien[] = [
   { href: "/presences", libelle: "Présences", icone: "✓", groupe: "Pédagogie" },
   { href: "/notes", libelle: "Notes", icone: "✎", groupe: "Pédagogie" },
   { href: "/bulletins", libelle: "Bulletins", icone: "▣", groupe: "Pédagogie" },
-  { href: "/bepc", libelle: "Résultats BEPC", icone: "★", groupe: "Pédagogie" },
+  { href: "/bepc", libelle: "Examen national", icone: "★", groupe: "Pédagogie" },
   { href: "/paiements", libelle: "Paiements", icone: "₣", groupe: "Finances" },
   { href: "/communication", libelle: "Communication", icone: "✉", groupe: "Finances" },
   { href: "/parametres", libelle: "Paramètres", icone: "⚙", groupe: "Administration" },

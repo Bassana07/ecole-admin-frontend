@@ -12,6 +12,7 @@ import type {
   Personnel,
   ResultatBepc,
   Role,
+  TypeExamen,
 } from "./types";
 
 export const ECOLE = "COMPLEXE SCOLAIRE LE ROYAUME DES SAVOIRS";
@@ -246,8 +247,10 @@ export function emploiDuTemps(classe: string): Cours[] {
   return cours;
 }
 
-/* ---------- Résultats BEPC ---------- */
-export const SESSION_BEPC = "Session juin 2026";
+/* ---------- Examens nationaux (CEP & BEPC) ---------- */
+export const SESSION_EXAMEN = "Session juin 2026";
+/** @deprecated conservé pour rétrocompatibilité — utiliser SESSION_EXAMEN */
+export const SESSION_BEPC = SESSION_EXAMEN;
 
 export const MATIERES_BEPC = [
   { nom: "Français", coefficient: 4 },
@@ -258,7 +261,14 @@ export const MATIERES_BEPC = [
   { nom: "EPS", coefficient: 1 },
 ] as const;
 
-function mentionBepc(moyenne: number): string | null {
+export const MATIERES_CEP = [
+  { nom: "Français", coefficient: 3 },
+  { nom: "Mathématiques", coefficient: 3 },
+  { nom: "Éveil (Histoire-Géo-Sciences)", coefficient: 2 },
+  { nom: "Lecture", coefficient: 1 },
+] as const;
+
+function mentionExamen(moyenne: number): string | null {
   if (moyenne >= 16) return "Très Bien";
   if (moyenne >= 14) return "Bien";
   if (moyenne >= 12) return "Assez Bien";
@@ -266,7 +276,7 @@ function mentionBepc(moyenne: number): string | null {
   return null;
 }
 
-/** Candidats inscrits (classe de 3e) + quelques candidats libres de la session. */
+/** Candidats libres du BEPC (en plus des élèves de 3e). */
 const CANDIDATS_BEPC_EXTRA: { nom: string; prenom: string }[] = [
   ["Kaboré", "Salamata"],
   ["Ouédraogo", "Ismaël"],
@@ -276,39 +286,85 @@ const CANDIDATS_BEPC_EXTRA: { nom: string; prenom: string }[] = [
   ["Traoré", "Moussa"],
 ].map(([nom, prenom]) => ({ nom, prenom }));
 
-export const RESULTATS_BEPC: ResultatBepc[] = (() => {
-  const inscrits = ELEVES.filter((e) => e.classe === "3e").map((e) => ({
+/** Candidats libres du CEP (en plus des élèves de CM2). */
+const CANDIDATS_CEP_EXTRA: { nom: string; prenom: string }[] = [
+  ["Nikiéma", "Rasmané"],
+  ["Ilboudo", "Nafi"],
+  ["Bationo", "Roland"],
+  ["Congo", "Aline"],
+  ["Yaméogo", "Wend-Kuni"],
+].map(([nom, prenom]) => ({ nom, prenom }));
+
+function genererResultats(opts: {
+  examen: TypeExamen;
+  classe: string;
+  matieres: readonly { nom: string; coefficient: number }[];
+  libres: { nom: string; prenom: string }[];
+  prefixe: string;
+  graine: number;
+  idDebut: number;
+}): ResultatBepc[] {
+  const inscrits = ELEVES.filter((e) => e.classe === opts.classe).map((e) => ({
     eleveId: e.id as number | null,
     nom: e.nom,
     prenom: e.prenom,
   }));
-  const libres = CANDIDATS_BEPC_EXTRA.map((c) => ({ eleveId: null as number | null, ...c }));
+  const libres = opts.libres.map((c) => ({ eleveId: null as number | null, ...c }));
   const tous = [...inscrits, ...libres];
 
-  return tous.map((c, i) => {
-    const r = alea(900 + i * 17);
-    const absent = i === tous.length - 1;
-    const notes = MATIERES_BEPC.map((m) => ({
-      matiere: m.nom,
-      note: absent ? 0 : Math.min(20, entre(r, 6, 18) + (i % 3 === 0 ? 2 : 0)),
-      coefficient: m.coefficient,
-    }));
-    const totalCoef = notes.reduce((s, n) => s + n.coefficient, 0);
-    const moyenne = absent ? 0 : notes.reduce((s, n) => s + n.note * n.coefficient, 0) / totalCoef;
-    const decision = absent ? "Absent" : moyenne >= 10 ? "Admis" : "Ajourné";
-    return {
-      id: i + 1,
-      eleveId: c.eleveId,
-      nom: c.nom,
-      prenom: c.prenom,
-      numeroTable: `BEPC-26-${String(101 + i).padStart(3, "0")}`,
-      notes,
-      moyenne: Math.round(moyenne * 100) / 100,
-      decision: decision as ResultatBepc["decision"],
-      mention: decision === "Admis" ? mentionBepc(moyenne) : null,
-    };
-  }).sort((a, b) => b.moyenne - a.moyenne);
-})();
+  return tous
+    .map((c, i) => {
+      const r = alea(opts.graine + i * 17);
+      const absent = i === tous.length - 1;
+      const notes = opts.matieres.map((m) => ({
+        matiere: m.nom,
+        note: absent ? 0 : Math.min(20, entre(r, 6, 18) + (i % 3 === 0 ? 2 : 0)),
+        coefficient: m.coefficient,
+      }));
+      const totalCoef = notes.reduce((s, n) => s + n.coefficient, 0);
+      const moyenne = absent ? 0 : notes.reduce((s, n) => s + n.note * n.coefficient, 0) / totalCoef;
+      const decision = absent ? "Absent" : moyenne >= 10 ? "Admis" : "Ajourné";
+      return {
+        id: opts.idDebut + i,
+        examen: opts.examen,
+        eleveId: c.eleveId,
+        nom: c.nom,
+        prenom: c.prenom,
+        numeroTable: `${opts.prefixe}-${String(101 + i).padStart(3, "0")}`,
+        notes,
+        moyenne: Math.round(moyenne * 100) / 100,
+        decision: decision as ResultatBepc["decision"],
+        mention: decision === "Admis" ? mentionExamen(moyenne) : null,
+      };
+    })
+    .sort((a, b) => b.moyenne - a.moyenne);
+}
+
+export const RESULTATS_CEP: ResultatBepc[] = genererResultats({
+  examen: "CEP",
+  classe: "CM2",
+  matieres: MATIERES_CEP,
+  libres: CANDIDATS_CEP_EXTRA,
+  prefixe: "CEP-26",
+  graine: 500,
+  idDebut: 1,
+});
+
+export const RESULTATS_BEPC: ResultatBepc[] = genererResultats({
+  examen: "BEPC",
+  classe: "3e",
+  matieres: MATIERES_BEPC,
+  libres: CANDIDATS_BEPC_EXTRA,
+  prefixe: "BEPC-26",
+  graine: 900,
+  idDebut: 1000,
+});
+
+export const RESULTATS_EXAMENS: ResultatBepc[] = [...RESULTATS_CEP, ...RESULTATS_BEPC];
+
+export function resultatsExamen(examen: TypeExamen): ResultatBepc[] {
+  return examen === "CEP" ? RESULTATS_CEP : RESULTATS_BEPC;
+}
 
 export function nomCompletBepc(r: ResultatBepc) {
   return `${r.nom} ${r.prenom}`;
