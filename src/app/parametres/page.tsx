@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { EnTete, Onglets, Stat } from "@/components/ui";
 import { ACCES } from "@/lib/format";
-import { ANNEE, CLASSES, ECOLE, FRAIS_SCOLARITE, MATIERES, PERIODE, PERSONNEL, ROLES } from "@/lib/data";
+import { ANNEE, ADRESSE, CLASSES, DEVISE, ECOLE, FRAIS_SCOLARITE, MATIERES, PERIODE, PERSONNEL, ROLES, SIGLE } from "@/lib/data";
 import { fcfa } from "@/lib/format";
 import { useEcole } from "@/lib/store";
 
@@ -29,11 +29,14 @@ export default function PageParametres() {
             <p className="oeil">Identité de l&apos;école</p>
             <div className="lignes">
               <div className="ligne"><span>Nom</span><span>{ECOLE}</span></div>
+              <div className="ligne"><span>Sigle</span><span>{SIGLE}</span></div>
+              <div className="ligne"><span>Devise</span><span>{DEVISE}</span></div>
+              <div className="ligne"><span>Adresse</span><span>{ADRESSE}</span></div>
               <div className="ligne"><span>Année scolaire</span><span>{ANNEE}</span></div>
               <div className="ligne"><span>Période en cours</span><span>{PERIODE}</span></div>
               <div className="ligne"><span>Classes ouvertes</span><span>{CLASSES.join(", ")}</span></div>
               <div className="ligne"><span>Frais de scolarité</span><span>{fcfa(FRAIS_SCOLARITE)}</span></div>
-              <div className="ligne"><span>Devise</span><span>Franc CFA (XOF)</span></div>
+              <div className="ligne"><span>Monnaie</span><span>Franc CFA (XOF)</span></div>
             </div>
             <button className="btn sec plein" onClick={() => annoncer("Paramètres de l'école enregistrés.")}>
               Modifier
