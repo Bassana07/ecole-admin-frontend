@@ -105,8 +105,11 @@ export interface EvenementJournal {
 
 export type DecisionBepc = "Admis" | "Ajourné" | "Absent";
 
+export type TypeExamen = "CEP" | "BEPC";
+
 export interface ResultatBepc {
   id: number;
+  examen: TypeExamen;
   eleveId: number | null;
   nom: string;
   prenom: string;
