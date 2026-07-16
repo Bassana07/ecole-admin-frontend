@@ -63,10 +63,14 @@ export default function PageBulletins() {
 
       <div className="bulletin">
         <div className="bulletin-tete">
-          <div>
-            <p className="oeil">{ECOLE}</p>
-            <h2>Bulletin — {PERIODE}</h2>
-            <p className="sous">Année scolaire {ANNEE}</p>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.jpeg" alt="" width={48} height={48} style={{ borderRadius: "50%", objectFit: "cover" }} />
+            <div>
+              <p className="oeil">{ECOLE}</p>
+              <h2>Bulletin — {PERIODE}</h2>
+              <p className="sous">Année scolaire {ANNEE}</p>
+            </div>
           </div>
           <div style={{ textAlign: "right" }}>
             <p className="nom" style={{ fontSize: 18 }}>{nomComplet(eleve)}</p>

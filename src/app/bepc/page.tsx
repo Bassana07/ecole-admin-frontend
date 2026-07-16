@@ -130,10 +130,14 @@ export default function PageBepc() {
         {candidat && (
           <div className="bulletin">
             <div className="bulletin-tete">
-              <div>
-                <p className="oeil">{ECOLE}</p>
-                <h2>Relevé BEPC</h2>
-                <p className="sous">{SESSION_BEPC}</p>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.jpeg" alt="" width={48} height={48} style={{ borderRadius: "50%", objectFit: "cover" }} />
+                <div>
+                  <p className="oeil">{ECOLE}</p>
+                  <h2>Relevé BEPC</h2>
+                  <p className="sous">{SESSION_BEPC}</p>
+                </div>
               </div>
               <div style={{ textAlign: "right" }}>
                 <p className="nom" style={{ fontSize: 18 }}>{nomCompletBepc(candidat)}</p>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ANNEE, ECOLE, PERIODE, ROLES } from "@/lib/data";
+import { ECOLE, ROLES } from "@/lib/data";
 import { peut } from "@/lib/format";
 import { useEcole } from "@/lib/store";
 import type { Role } from "@/lib/types";
@@ -44,12 +44,9 @@ export function Rail() {
 
   return (
     <nav className="rail" aria-label="Menu principal">
-      <div className="marque">
-        <div className="logo" aria-hidden="true">RS</div>
-        <div>
-          <b>{ECOLE}</b>
-          <span>{ANNEE} · {PERIODE}</span>
-        </div>
+      <div className="marque marque-logo">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.jpeg" alt={`Logo ${ECOLE}`} className="logo-img" width={96} height={96} />
       </div>
 
       {groupes.map((g) => (

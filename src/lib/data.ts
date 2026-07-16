@@ -14,7 +14,11 @@ import type {
   Role,
 } from "./types";
 
-export const ECOLE = "Le Royaume du Savoir";
+export const ECOLE = "COMPLEXE SCOLAIRE LE ROYAUME DES SAVOIRS";
+export const SIGLE = "CSRS";
+export const ADRESSE =
+  "Zagtouli, à 300 mètres du carrefour Diamond Cement, près de la station Sogelb";
+export const DEVISE = "Savoir · Persévérance · Réussite";
 export const ANNEE = "2025–2026";
 export const PERIODE = "2e trimestre";
 export const FRAIS_SCOLARITE = 180_000;
